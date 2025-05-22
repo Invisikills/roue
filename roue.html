@@ -65,14 +65,14 @@
             min-height: 3rem; /* Hauteur minimale pour éviter le CLS */
         }
 
-        /* La classe hidden-app n'est plus appliquée par défaut sur le conteneur principal */
+        /* La classe hidden-app est appliquée par défaut sur le conteneur principal */
         .hidden-app {
             display: none !important;
         }
     </style>
 </head>
 <body class="p-4">
-    <div id="app-container" class="flex flex-col justify-center items-center w-full h-full">
+    <div id="app-container" class="hidden-app flex flex-col justify-center items-center w-full h-full">
         <h1 class="text-4xl font-bold mb-8 text-center">Roue de la Fortune</h1>
 
         <div class="wheel-container">
@@ -208,7 +208,14 @@
             requestAnimationFrame(animateSpin);
         }
 
-        // Fonction pour faire tourner la roue
+        // NOUVEAU : Fonction pour déclencher le spin via un événement externe (TikFinity) ou manuel
+        function initiateSpin() {
+            appContainer.classList.remove('hidden-app'); // Rend le conteneur principal visible
+            resizeCanvas(); // Assure que le canvas est bien dimensionné
+            spinWheel(); // Lance le spin
+        }
+
+        // Fonction pour faire tourner la roue (appelée par initiateSpin ou manuellement)
         function spinWheel() {
             if (isSpinning) return;
 
@@ -231,10 +238,10 @@
             animateSpin();
         }
 
-        // Initialisation : Dessine la roue au chargement de la page et la fait tourner automatiquement
+        // Initialisation : Dessine la roue au chargement de la page
         window.onload = function() {
             drawWheel();
-            spinButton.addEventListener('click', spinWheel); // Le bouton appelle spinWheel directement
+            spinButton.addEventListener('click', initiateSpin); // Le bouton appelle initiateSpin
 
             function resizeCanvas() {
                 const containerWidth = canvas.parentElement.clientWidth;
@@ -246,8 +253,12 @@
             window.addEventListener('resize', resizeCanvas);
             resizeCanvas();
 
-            // MODIFICATION ICI : Lance le spin automatiquement au chargement de la page
-            spinWheel();
+            // NOUVEAU : Vérifie les paramètres d'URL pour un déclenchement automatique
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('trigger') === 'spin') {
+                initiateSpin(); // Déclenche le spin si le paramètre 'trigger=spin' est présent
+            }
+            // La roue est cachée par défaut et ne tourne pas automatiquement sans trigger.
         };
     </script>
 </body>

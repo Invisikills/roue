@@ -132,7 +132,10 @@
     <audio id="endSound" src="https://www.soundjay.com/misc/fail-buzzer-01.mp3" preload="auto"></audio>
 
     <script>
+    console.log("Script de la Roue de la Fortune chargé.");
+
     document.addEventListener('DOMContentLoaded', () => {
+        console.log("DOMContentLoaded fired.");
         const canvas = document.getElementById('fortuneWheel');
         const ctx = canvas?.getContext('2d');
         const spinButton = document.getElementById('spinButton');
@@ -155,6 +158,7 @@
             }
             return;
         }
+        console.log("Tous les éléments HTML requis sont trouvés.");
 
         const segments = [
             { text: "3 wins", value: 3, color: "#2f855a", url: "https://winstream.fr/addwinv2.php?win=3&token=invisikills_IngencyLive_1qh0v8bSg4Knr7gfBvHsGRDv1qOLMX" },
@@ -244,9 +248,10 @@
         }
 
         function initiateSpinAndShow() {
-            debugMessage.style.display = 'block'; // Affiche le message de débogage
+            console.log("initiateSpinAndShow called.");
+            debugMessage.style.display = 'block';
             debugMessage.textContent = "Lancement de la roue...";
-            appContainer.classList.remove('hidden-app'); // Rend le conteneur principal visible
+            appContainer.classList.remove('hidden-app');
             requestAnimationFrame(() => {
                 resizeCanvas();
                 spinWheel();
@@ -254,6 +259,7 @@
         }
 
         function resizeCanvas() {
+            console.log("resizeCanvas called.");
             const containerWidth = canvas.parentElement.clientWidth;
             const size = Math.min(containerWidth * 0.9, 400);
             canvas.width = size;
@@ -262,6 +268,7 @@
         }
 
         function spinWheel() {
+            console.log("spinWheel called.");
             if (isSpinning) return;
             isSpinning = true;
             spinButton.disabled = true;
@@ -269,7 +276,7 @@
             resultDisplay.textContent = "En attente du résultat...";
             resultDisplay.className = "text-2xl font-semibold text-center result-display";
             
-            debugMessage.textContent = "Roue en rotation..."; // Met à jour le message de débogage
+            debugMessage.textContent = "Roue en rotation...";
 
             spinSpeed = Math.random() * 0.1 + 0.05;
             currentRotation = 0;
@@ -307,13 +314,13 @@
                     callWinStreamAPI(resultSegment.url);
                     endSound?.play();
                     
-                    debugMessage.textContent = "Roue terminée !"; // Met à jour le message de débogage
+                    debugMessage.textContent = "Roue terminée !";
                     
                     setTimeout(() => {
                         appContainer.classList.add('hidden-app');
                         resultDisplay.textContent = "Prêt à jouer ?";
                         resultDisplay.className = "text-2xl font-semibold text-center result-display";
-                        debugMessage.style.display = 'none'; // Cache le message de débogage après disparition
+                        debugMessage.style.display = 'none';
                     }, 5000);
                 }
             }
@@ -329,20 +336,40 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas(); // Appel initial pour définir la taille du canvas
 
-        // MODIFICATION CLÉ ICI : Vérifie le paramètre d'URL pour le déclenchement
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('trigger') === 'spin') {
-            console.log("Déclenchement via URL ?trigger=spin détecté.");
-            // Ajoute une petite temporisation pour s'assurer que le rendu est stable dans Live Studio
+            console.log("Paramètre 'trigger=spin' détecté dans l'URL. Déclenchement de la roue...");
+            debugMessage.style.display = 'block';
+            debugMessage.textContent = "Paramètre 'trigger=spin' détecté. Préparation au lancement...";
             setTimeout(() => {
                 initiateSpinAndShow();
-            }, 100); // 100ms de délai
+            }, 500); // 500ms de délai
         } else {
-            console.log("Pas de paramètre ?trigger=spin. La roue reste cachée.");
+            console.log("Pas de paramètre 'trigger=spin'. La roue reste cachée par défaut.");
             appContainer.classList.add('hidden-app');
-            debugMessage.style.display = 'none';
+            debugMessage.style.display = 'block'; // Garde le message de débogage visible
+            debugMessage.textContent = "Roue en attente de déclenchement (paramètre 'trigger=spin' manquant).";
         }
     });
     </script>
 </body>
 </html>
+```
+
+### Prochaines étapes pour le débogage :
+
+1.  **Mettez à jour votre fichier `roue.html` sur GitHub Pages** avec ce nouveau code. C'est crucial pour que les modifications prennent effet.
+2.  **Testez l'URL directement dans un navigateur standard :**
+    * Ouvrez `https://invisikills.github.io/roue/roue.html?trigger=spin` dans Chrome ou Firefox.
+    * **Observez le message de débogage :** Il devrait d'abord afficher "Paramètre 'trigger=spin' détecté. Préparation au lancement...", puis "Lancement de la roue...", "Roue en rotation...", etc.
+    * **Vérifiez la console de développement (F12) :** Regardez les messages `console.log` et `console.error`. Y a-t-il des erreurs ? Les messages de log s'affichent-ils dans l'ordre attendu ?
+    * **La roue doit apparaître, tourner correctement et disparaître.** Si ce test ne fonctionne pas, le problème est dans le code ou le déploiement sur GitHub Pages.
+
+3.  **Testez dans TikTok Live Studio :**
+    * Assurez-vous que l'URL de votre "Source Web" est bien `https://invisikills.github.io/roue/roue.html?trigger=spin`.
+    * **TRÈS IMPORTANT :** Dans les propriétés de la "Source Web" de TikTok Live Studio, il doit y avoir une option pour **"Actualiser la source quand elle est activée"** ou **"Refresh on trigger"**. **Cette option doit être cochée/activée.** Sans cela, Live Studio ne rechargera pas la page et la roue ne se déclenchera pas.
+    * **Observez le message de débogage dans Live Studio :** Il devrait vous donner un indice sur l'état de la roue.
+
+Si, après ces vérifications, la roue ne se déclenche toujours pas dans TikTok Live Studio, cela suggère fortement une limitation ou un comportement spécifique du navigateur intégré de Live Studio, ou un problème avec la manière dont TikFinity envoie le signal de rechargement.
+
+Dans ce cas, d'autres approches pourraient être nécessaires, mais elles seraient plus complexes (par exemple, l'utilisation d'un service intermédiaire pour envoyer des messages plus directs, ou l'exploration d'autres outils de streaming avec des intégrations plus robustes pour les sources web). Mais commençons par valider cette dernière version avec les étapes de déboga

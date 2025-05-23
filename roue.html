@@ -226,6 +226,9 @@
             window.addEventListener('resize', resizeCanvas);
             resizeCanvas();
             initiateSpinAndShow();
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('trigger') === '1') {
+            initiateSpinAndShow();
         };
     </script>
 </body>

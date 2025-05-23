@@ -41,8 +41,8 @@
             max-height: 90vw; /* Pour maintenir un aspect carré/circulaire */
             
             /* Ajoute une taille minimale pour le canvas */
-            min-width: 200px; 
-            min-height: 200px;
+            min-width: 250px; /* Augmenté pour plus de visibilité */
+            min-height: 250px; /* Augmenté pour plus de visibilité */
             
             display: block; /* Supprime l'espace sous le canvas */
         }
@@ -87,6 +87,23 @@
         .hidden-app {
             display: none !important;
         }
+
+        /* NOUVEAU : Style pour le message de débogage */
+        #debug-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            z-index: 1000;
+            display: none; /* Caché par défaut */
+        }
     </style>
 </head>
 <body class="p-4">
@@ -107,6 +124,10 @@
         </p>
     </div>
 
+    <div id="debug-message">
+        Tentative de lancement de la roue...
+    </div>
+
     <audio id="spinSound" src="https://www.soundjay.com/buttons/button-1.mp3" preload="auto"></audio>
     <audio id="endSound" src="https://www.soundjay.com/misc/fail-buzzer-01.mp3" preload="auto"></audio>
 
@@ -119,14 +140,19 @@
         const appContainer = document.getElementById('app-container');
         const spinSound = document.getElementById('spinSound');
         const endSound = document.getElementById('endSound');
+        const debugMessage = document.getElementById('debug-message'); // NOUVEAU : Référence au message de débogage
 
         // Vérification des éléments HTML au début
-        if (!canvas || !ctx || !spinButton || !resultDisplay || !appContainer || !spinSound || !endSound) {
+        if (!canvas || !ctx || !spinButton || !resultDisplay || !appContainer || !spinSound || !endSound || !debugMessage) {
             console.error("Un ou plusieurs éléments HTML requis sont manquants. Veuillez vérifier les IDs.");
-            // Afficher un message visible si possible, car la console n'est pas toujours accessible
             if (resultDisplay) {
                 resultDisplay.textContent = "Erreur: Éléments de l'application manquants. Contactez le support.";
                 resultDisplay.className = "text-2xl font-semibold text-center result-display text-red-500";
+            }
+            // Tente d'afficher le message de débogage si appContainer est introuvable
+            if (debugMessage) {
+                debugMessage.style.display = 'block';
+                debugMessage.textContent = "Erreur fatale: Éléments HTML manquants.";
             }
             return;
         }
@@ -179,6 +205,7 @@
         }
 
         async function callWinStreamAPI(url) {
+            console.log("Tentative d'envoi à WinStream:", url);
             try {
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -207,17 +234,20 @@
                 callWinStreamAPI(resultSegment.url);
                 endSound?.play();
                 setTimeout(() => {
-                    appContainer.classList.add('hidden-app');
+                    appContainer.classList.add('hidden-app'); // Cache le conteneur principal
                     resultDisplay.textContent = "Prêt à jouer ?";
                     resultDisplay.className = "text-2xl font-semibold text-center result-display";
-                }, 5000);
+                    debugMessage.style.display = 'none'; // Cache le message de débogage
+                }, 5000); // Reste affiché 5 secondes après la fin du spin
             }
             drawWheel();
             requestAnimationFrame(animateSpin);
         }
 
         function initiateSpinAndShow() {
-            appContainer.classList.remove('hidden-app');
+            debugMessage.style.display = 'block'; // Affiche le message de débogage
+            debugMessage.textContent = "Lancement de la roue...";
+            appContainer.classList.remove('hidden-app'); // Rend le conteneur principal visible
             requestAnimationFrame(() => {
                 resizeCanvas();
                 spinWheel();
@@ -239,6 +269,9 @@
             spinButton.textContent = "La roue tourne...";
             resultDisplay.textContent = "En attente du résultat...";
             resultDisplay.className = "text-2xl font-semibold text-center result-display";
+            
+            debugMessage.textContent = "Roue en rotation..."; // Met à jour le message de débogage
+
             spinSpeed = Math.random() * 0.1 + 0.05;
             currentRotation = 0;
             const randomSpins = Math.floor(Math.random() * 5) + 10;
@@ -274,10 +307,14 @@
                     resultDisplay.className = `text-2xl font-semibold text-center result-display ${resultSegment.value > 0 ? 'text-green-400' : 'text-red-400'}`;
                     callWinStreamAPI(resultSegment.url);
                     endSound?.play();
+                    
+                    debugMessage.textContent = "Roue terminée !"; // Met à jour le message de débogage
+                    
                     setTimeout(() => {
                         appContainer.classList.add('hidden-app');
                         resultDisplay.textContent = "Prêt à jouer ?";
                         resultDisplay.className = "text-2xl font-semibold text-center result-display";
+                        debugMessage.style.display = 'none'; // Cache le message de débogage après disparition
                     }, 5000);
                 }
             }
@@ -288,7 +325,8 @@
 
         // Initialisation : Dessine la roue au chargement de la page
         // et lance le spin automatiquement.
-        initiateSpinAndShow(); // Lance le spin dès que le DOM est chargé
+        // NOUVEAU : Appelle initiateSpinAndShow() directement au chargement du DOM
+        initiateSpinAndShow(); 
 
         spinButton.addEventListener('click', initiateSpinAndShow); // Le bouton appelle initiateSpinAndShow
         window.addEventListener('resize', resizeCanvas); // L'écouteur d'événement utilise la fonction globale

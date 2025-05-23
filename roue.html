@@ -3,21 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roue de la Fortune TikFinity</title>
+    <title>Roue de la Fortune</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Styles personnalisés pour la roue et l'interface */
+        /* Styles pour assurer que la page remplit l'écran */
+        html, body {
+            height: 100%; /* Assure que html et body prennent toute la hauteur */
+            width: 100%;  /* Assure que html et body prennent toute la largeur */
+            margin: 0;
+            padding: 0;
+        }
         body {
             font-family: 'Inter', sans-serif;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            /* Fond transparent pour la superposition */
-            background-color: transparent;
+            background-color: transparent; /* Fond transparent pour la superposition */
             color: #e2e8f0; /* Texte clair */
             overflow: hidden; /* Empêche le défilement */
+        }
+        /* Assure que le conteneur principal de l'application remplit l'espace */
+        #app-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
         canvas {
             background-color: #2d3748; /* Fond du canvas */
@@ -26,6 +39,11 @@
             margin-bottom: 2rem;
             max-width: 90vw; /* Rend le canvas réactif */
             max-height: 90vw; /* Pour maintenir un aspect carré/circulaire */
+            
+            /* Ajoute une taille minimale pour le canvas */
+            min-width: 200px; 
+            min-height: 200px;
+            
             display: block; /* Supprime l'espace sous le canvas */
         }
         .wheel-container {
@@ -208,14 +226,14 @@
             requestAnimationFrame(animateSpin);
         }
 
-        // NOUVEAU : Fonction pour déclencher le spin via un événement externe (TikFinity) ou manuel
-        function initiateSpin() {
+        // Fonction pour déclencher le spin (rend visible et lance le spin)
+        function initiateSpinAndShow() {
             appContainer.classList.remove('hidden-app'); // Rend le conteneur principal visible
             resizeCanvas(); // Assure que le canvas est bien dimensionné
             spinWheel(); // Lance le spin
         }
 
-        // Fonction pour faire tourner la roue (appelée par initiateSpin ou manuellement)
+        // Fonction pour faire tourner la roue (logique de spin)
         function spinWheel() {
             if (isSpinning) return;
 
@@ -241,7 +259,7 @@
         // Initialisation : Dessine la roue au chargement de la page
         window.onload = function() {
             drawWheel();
-            spinButton.addEventListener('click', initiateSpin); // Le bouton appelle initiateSpin
+            spinButton.addEventListener('click', initiateSpinAndShow); // Le bouton appelle initiateSpinAndShow
 
             function resizeCanvas() {
                 const containerWidth = canvas.parentElement.clientWidth;
@@ -253,12 +271,9 @@
             window.addEventListener('resize', resizeCanvas);
             resizeCanvas();
 
-            // NOUVEAU : Vérifie les paramètres d'URL pour un déclenchement automatique
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('trigger') === 'spin') {
-                initiateSpin(); // Déclenche le spin si le paramètre 'trigger=spin' est présent
-            }
-            // La roue est cachée par défaut et ne tourne pas automatiquement sans trigger.
+            // MODIFICATION CLÉ ICI : Lance le spin automatiquement au chargement de la page
+            // sans condition de paramètre d'URL.
+            initiateSpinAndShow();
         };
     </script>
 </body>

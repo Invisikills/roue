@@ -88,7 +88,7 @@
             display: none !important;
         }
 
-        /* NOUVEAU : Style pour le message de débogage */
+        /* Style pour le message de débogage */
         #debug-message {
             position: absolute;
             top: 50%;
@@ -125,7 +125,7 @@
     </div>
 
     <div id="debug-message">
-        Tentative de lancement de la roue...
+        Initialisation...
     </div>
 
     <audio id="spinSound" src="https://www.soundjay.com/buttons/button-1.mp3" preload="auto"></audio>
@@ -323,23 +323,26 @@
         }
 
         // Initialisation : Dessine la roue au chargement de la page
-        document.addEventListener('DOMContentLoaded', () => {
-            drawWheel();
-            spinButton.addEventListener('click', initiateSpinAndShow);
-            window.addEventListener('resize', resizeCanvas);
-            resizeCanvas(); // Appel initial pour définir la taille du canvas
+        // et gère le déclenchement via le paramètre d'URL.
+        drawWheel();
+        spinButton.addEventListener('click', initiateSpinAndShow);
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas(); // Appel initial pour définir la taille du canvas
 
-            // MODIFICATION CLÉ ICI : Vérifie le paramètre d'URL pour le déclenchement
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('trigger') === 'spin') {
-                initiateSpinAndShow(); // Déclenche le spin si le paramètre 'trigger=spin' est présent
-            } else {
-                // Si pas de paramètre 'trigger=spin', la roue reste cachée et ne tourne pas
-                appContainer.classList.add('hidden-app');
-                debugMessage.style.display = 'none'; // Assure que le message de débogage est caché
-            }
-        });
-    }); // NOUVEAU : Fermeture de l'écouteur DOMContentLoaded
+        // MODIFICATION CLÉ ICI : Vérifie le paramètre d'URL pour le déclenchement
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('trigger') === 'spin') {
+            console.log("Déclenchement via URL ?trigger=spin détecté.");
+            // Ajoute une petite temporisation pour s'assurer que le rendu est stable dans Live Studio
+            setTimeout(() => {
+                initiateSpinAndShow();
+            }, 100); // 100ms de délai
+        } else {
+            console.log("Pas de paramètre ?trigger=spin. La roue reste cachée.");
+            appContainer.classList.add('hidden-app');
+            debugMessage.style.display = 'none';
+        }
+    });
     </script>
 </body>
 </html>

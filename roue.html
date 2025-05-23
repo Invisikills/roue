@@ -140,7 +140,7 @@
         const appContainer = document.getElementById('app-container');
         const spinSound = document.getElementById('spinSound');
         const endSound = document.getElementById('endSound');
-        const debugMessage = document.getElementById('debug-message'); // NOUVEAU : Référence au message de débogage
+        const debugMessage = document.getElementById('debug-message');
 
         // Vérification des éléments HTML au début
         if (!canvas || !ctx || !spinButton || !resultDisplay || !appContainer || !spinSound || !endSound || !debugMessage) {
@@ -149,7 +149,6 @@
                 resultDisplay.textContent = "Erreur: Éléments de l'application manquants. Contactez le support.";
                 resultDisplay.className = "text-2xl font-semibold text-center result-display text-red-500";
             }
-            // Tente d'afficher le message de débogage si appContainer est introuvable
             if (debugMessage) {
                 debugMessage.style.display = 'block';
                 debugMessage.textContent = "Erreur fatale: Éléments HTML manquants.";
@@ -324,14 +323,23 @@
         }
 
         // Initialisation : Dessine la roue au chargement de la page
-        // et lance le spin automatiquement.
-        // NOUVEAU : Appelle initiateSpinAndShow() directement au chargement du DOM
-        initiateSpinAndShow(); 
+        document.addEventListener('DOMContentLoaded', () => {
+            drawWheel();
+            spinButton.addEventListener('click', initiateSpinAndShow);
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas(); // Appel initial pour définir la taille du canvas
 
-        spinButton.addEventListener('click', initiateSpinAndShow); // Le bouton appelle initiateSpinAndShow
-        window.addEventListener('resize', resizeCanvas); // L'écouteur d'événement utilise la fonction globale
-        resizeCanvas(); // Appel initial pour définir la taille du canvas
-    });
+            // MODIFICATION CLÉ ICI : Vérifie le paramètre d'URL pour le déclenchement
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('trigger') === 'spin') {
+                initiateSpinAndShow(); // Déclenche le spin si le paramètre 'trigger=spin' est présent
+            } else {
+                // Si pas de paramètre 'trigger=spin', la roue reste cachée et ne tourne pas
+                appContainer.classList.add('hidden-app');
+                debugMessage.style.display = 'none'; // Assure que le message de débogage est caché
+            }
+        });
+    }); // NOUVEAU : Fermeture de l'écouteur DOMContentLoaded
     </script>
 </body>
 </html>

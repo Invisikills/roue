@@ -6,10 +6,9 @@
     <title>Roue de la Fortune</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Styles pour assurer que la page remplit l'écran */
         html, body {
-            height: 100%; /* Assure que html et body prennent toute la hauteur */
-            width: 100%;  /* Assure que html et body prennent toute la largeur */
+            height: 100%;
+            width: 100%;
             margin: 0;
             padding: 0;
         }
@@ -19,11 +18,10 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background-color: transparent; /* Fond transparent pour la superposition */
-            color: #e2e8f0; /* Texte clair */
-            overflow: hidden; /* Empêche le défilement */
+            background-color: transparent;
+            color: #e2e8f0;
+            overflow: hidden;
         }
-        /* Assure que le conteneur principal de l'application remplit l'espace */
         #app-container {
             width: 100%;
             height: 100%;
@@ -33,18 +31,15 @@
             align-items: center;
         }
         canvas {
-            background-color: #2d3748; /* Fond du canvas */
-            border-radius: 50%; /* Rend le canvas circulaire */
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5); /* Ombre pour la profondeur */
+            background-color: #2d3748;
+            border-radius: 50%;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
             margin-bottom: 2rem;
-            max-width: 90vw; /* Rend le canvas réactif */
-            max-height: 90vw; /* Pour maintenir un aspect carré/circulaire */
-            
-            /* Ajoute une taille minimale pour le canvas */
-            min-width: 200px; 
+            max-width: 90vw;
+            max-height: 90vw;
+            min-width: 200px;
             min-height: 200px;
-            
-            display: block; /* Supprime l'espace sous le canvas */
+            display: block;
         }
         .wheel-container {
             position: relative;
@@ -52,19 +47,19 @@
             justify-content: center;
             align-items: center;
             width: 100%;
-            max-width: 600px; /* Taille maximale du conteneur de la roue */
+            max-width: 600px;
         }
         .pointer {
             position: absolute;
-            top: -20px; /* Positionne la flèche au-dessus de la roue */
+            top: -20px;
             left: 50%;
             transform: translateX(-50%);
             width: 0;
             height: 0;
             border-left: 20px solid transparent;
             border-right: 20px solid transparent;
-            border-bottom: 40px solid #e53e3e; /* Flèche pointant vers le bas */
-            border-top: none; /* Supprime l'ancienne bordure */
+            border-bottom: 40px solid #e53e3e;
+            border-top: none;
             z-index: 10;
         }
         button {
@@ -80,10 +75,8 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .result-display {
-            min-height: 3rem; /* Hauteur minimale pour éviter le CLS */
+            min-height: 3rem;
         }
-
-        /* La classe hidden-app est appliquée par défaut sur le conteneur principal */
         .hidden-app {
             display: none !important;
         }
@@ -92,29 +85,23 @@
 <body class="p-4">
     <div id="app-container" class="hidden-app flex flex-col justify-center items-center w-full h-full">
         <h1 class="text-4xl font-bold mb-8 text-center">Roue de la Fortune</h1>
-
         <div class="wheel-container">
             <canvas id="fortuneWheel" width="400" height="400"></canvas>
             <div class="pointer"></div>
         </div>
-
         <button id="spinButton" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-xl mb-4">
             Faire tourner la roue !
         </button>
-
         <p id="resultDisplay" class="text-2xl font-semibold text-center result-display">
             Prêt à jouer ?
         </p>
     </div>
-
     <script>
         const canvas = document.getElementById('fortuneWheel');
         const ctx = canvas.getContext('2d');
         const spinButton = document.getElementById('spinButton');
         const resultDisplay = document.getElementById('resultDisplay');
         const appContainer = document.getElementById('app-container');
-
-        // Définition des segments de la roue avec leurs URLs WinStream associées
         const segments = [
             { text: "3 wins", value: 3, color: "#2f855a", url: "https://winstream.fr/addwinv2.php?win=3&token=invisikills_IngencyLive_1qh0v8bSg4Knr7gfBvHsGRDv1qOLMX" },
             { text: "-3 wins", value: -3, color: "#e53e3e", url: "https://winstream.fr/removewinv2.php?win=3&token=invisikills_IngencyLive_1qh0v8bSg4Knr7gfBvHsGRDv1qOLMX" },
@@ -125,33 +112,22 @@
         ];
         const numSegments = segments.length;
         const arc = (2 * Math.PI) / numSegments;
-
         let currentRotation = 0;
         let spinSpeed = 0;
         const friction = 0.99;
         let isSpinning = false;
 
-        // Fonction pour dessiner la roue
         function drawWheel() {
-            // console.log("drawWheel called. Canvas size:", canvas.width, canvas.height); // Debug log
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
             const centerX = canvas.width / 2;
             const centerY = canvas.height / 2;
             const radius = Math.min(centerX, centerY) * 0.9;
-
-            // Ajout d'une simple forme pour vérifier si le canvas dessine
-            // ctx.fillStyle = 'blue';
-            // ctx.fillRect(0, 0, 50, 50);
-
             ctx.save();
             ctx.translate(centerX, centerY);
             ctx.rotate(currentRotation);
-
             for (let i = 0; i < numSegments; i++) {
                 const angle = i * arc;
                 const segment = segments[i];
-
                 ctx.beginPath();
                 ctx.arc(0, 0, radius, angle, angle + arc);
                 ctx.lineTo(0, 0);
@@ -161,7 +137,6 @@
                 ctx.strokeStyle = "#1a202c";
                 ctx.lineWidth = 2;
                 ctx.stroke();
-
                 ctx.save();
                 ctx.rotate(angle + arc / 2 + Math.PI / 2);
                 ctx.fillStyle = "#e2e8f0";
@@ -174,98 +149,67 @@
             ctx.restore();
         }
 
-        // Fonction pour appeler l'API WinStream
         async function callWinStreamAPI(url) {
-            console.log("Tentative d'envoi à WinStream:", url);
             try {
                 const response = await fetch(url);
-                if (response.ok) {
-                    const data = await response.text();
-                    console.log("WinStream API Réponse (succès):", data);
-                } else {
-                    console.error("WinStream API Erreur (HTTP):", response.status, response.statusText);
-                }
-            } catch (error) {
-                console.error("WinStream API Erreur (connexion/CORS):", error);
-                let errorMessage = error.message || (error.name ? `${error.name}: ${error.message}` : String(error));
-                console.error(`Détails de l'erreur: ${errorMessage}. Cela est probablement dû à une restriction CORS si le fichier est local ou non autorisé par le serveur WinStream.`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                await response.text();
+            } catch (e) {
+                console.error("Erreur WinStream API:", e);
             }
         }
 
-        // Fonction d'animation de la roue
         function animateSpin() {
             if (!isSpinning) return;
-
             currentRotation += spinSpeed;
             spinSpeed *= friction;
-
             if (spinSpeed < 0.001) {
                 isSpinning = false;
                 spinButton.disabled = false;
                 spinButton.textContent = "Faire tourner la roue !";
-
                 const normalizedRotation = (currentRotation % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
                 let angleUnderPointer = (3 * Math.PI / 2 - normalizedRotation);
                 angleUnderPointer = (angleUnderPointer % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
                 const segmentIndex = Math.floor(angleUnderPointer / arc);
                 const resultSegment = segments[segmentIndex];
-
-                let messagePrefix = "Vous avez gagné : ";
-                if (resultSegment.value < 0) {
-                    messagePrefix = "Vous avez perdu : ";
-                }
+                const messagePrefix = resultSegment.value < 0 ? "Vous avez perdu : " : "Vous avez gagné : ";
                 resultDisplay.textContent = `${messagePrefix}${resultSegment.text} !`;
                 resultDisplay.className = `text-2xl font-semibold text-center result-display ${resultSegment.value > 0 ? 'text-green-400' : 'text-red-400'}`;
-
                 callWinStreamAPI(resultSegment.url);
-
-                // Cacher la roue après un délai
                 setTimeout(() => {
-                    appContainer.classList.add('hidden-app'); // Cache le conteneur principal
+                    appContainer.classList.add('hidden-app');
                     resultDisplay.textContent = "Prêt à jouer ?";
                     resultDisplay.className = "text-2xl font-semibold text-center result-display";
-                }, 5000); // Reste affiché 5 secondes après la fin du spin
+                }, 5000);
             }
-
             drawWheel();
             requestAnimationFrame(animateSpin);
         }
 
-        // Fonction pour déclencher le spin (rend visible et lance le spin)
         function initiateSpinAndShow() {
-            appContainer.classList.remove('hidden-app'); // Rend le conteneur principal visible
-            // Utilise requestAnimationFrame pour attendre le prochain rendu du navigateur
-            // avant de redimensionner et lancer le spin, assurant que les dimensions sont à jour.
+            appContainer.classList.remove('hidden-app');
             requestAnimationFrame(() => {
-                // console.log("initiatespinAndShow: resizing and spinning..."); // Debug log
-                resizeCanvas(); // Assure que le canvas est bien dimensionné
-                spinWheel(); // Lance le spin
+                resizeCanvas();
+                spinWheel();
             });
         }
 
-        // NOUVEAU : Fonction resizeCanvas déplacée en dehors de window.onload
         function resizeCanvas() {
             const containerWidth = canvas.parentElement.clientWidth;
-            // console.log("resizeCanvas: containerWidth =", containerWidth); // Debug log
             const size = Math.min(containerWidth * 0.9, 400);
-            // console.log("resizeCanvas: calculated size =", size); // Debug log
             canvas.width = size;
             canvas.height = size;
             drawWheel();
         }
 
-        // Fonction pour faire tourner la roue (logique de spin)
         function spinWheel() {
             if (isSpinning) return;
-
             isSpinning = true;
             spinButton.disabled = true;
             spinButton.textContent = "La roue tourne...";
             resultDisplay.textContent = "En attente du résultat...";
             resultDisplay.className = "text-2xl font-semibold text-center result-display";
-
             spinSpeed = Math.random() * 0.1 + 0.05;
-
             currentRotation = 0;
             const randomSpins = Math.floor(Math.random() * 5) + 10;
             const targetSegmentIndex = Math.floor(Math.random() * numSegments);
@@ -273,20 +217,14 @@
             let finalStopAngle = (3 * Math.PI / 2) - targetSegmentCenterAngle;
             finalStopAngle = (finalStopAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
             currentRotation = randomSpins * 2 * Math.PI + finalStopAngle;
-
             animateSpin();
         }
 
-        // Initialisation : Dessine la roue au chargement de la page
         window.onload = function() {
             drawWheel();
-            spinButton.addEventListener('click', initiateSpinAndShow); // Le bouton appelle initiateSpinAndShow
-
-            window.addEventListener('resize', resizeCanvas); // L'écouteur d'événement utilise maintenant la fonction globale
-            resizeCanvas(); // Appel initial pour définir la taille du canvas
-
-            // Lance le spin automatiquement au chargement de la page
-            // sans condition de paramètre d'URL.
+            spinButton.addEventListener('click', initiateSpinAndShow);
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
             initiateSpinAndShow();
         };
     </script>

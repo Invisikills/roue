@@ -1,11 +1,18 @@
 <script>
+document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('fortuneWheel');
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas?.getContext('2d');
     const spinButton = document.getElementById('spinButton');
     const resultDisplay = document.getElementById('resultDisplay');
     const appContainer = document.getElementById('app-container');
     const spinSound = document.getElementById('spinSound');
     const endSound = document.getElementById('endSound');
+
+    if (!canvas || !ctx || !spinButton || !resultDisplay || !appContainer) {
+        console.error("Un ou plusieurs éléments HTML requis sont manquants.");
+        return;
+    }
+
     const segments = [
         { text: "3 wins", value: 3, color: "#2f855a", url: "https://winstream.fr/addwinv2.php?win=3&token=invisikills_IngencyLive_1qh0v8bSg4Knr7gfBvHsGRDv1qOLMX" },
         { text: "-3 wins", value: -3, color: "#e53e3e", url: "https://winstream.fr/removewinv2.php?win=3&token=invisikills_IngencyLive_1qh0v8bSg4Knr7gfBvHsGRDv1qOLMX" },
@@ -80,7 +87,7 @@
             resultDisplay.textContent = `${messagePrefix}${resultSegment.text} !`;
             resultDisplay.className = `text-2xl font-semibold text-center result-display ${resultSegment.value > 0 ? 'text-green-400' : 'text-red-400'}`;
             callWinStreamAPI(resultSegment.url);
-            endSound.play();
+            endSound?.play();
             setTimeout(() => {
                 appContainer.classList.add('hidden-app');
                 resultDisplay.textContent = "Prêt à jouer ?";
@@ -121,19 +128,54 @@
         const targetSegmentCenterAngle = (targetSegmentIndex * arc) + (arc / 2);
         let finalStopAngle = (3 * Math.PI / 2) - targetSegmentCenterAngle;
         finalStopAngle = (finalStopAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
-        currentRotation = randomSpins * 2 * Math.PI + finalStopAngle;
-        spinSound.play();
-        animateSpin();
+        const totalRotation = randomSpins * 2 * Math.PI + finalStopAngle;
+
+        const start = performance.now();
+        const duration = 5000;
+        const initialRotation = currentRotation;
+
+        function smoothAnimation(now) {
+            const elapsed = now - start;
+            const progress = Math.min(elapsed / duration, 1);
+            const easeOut = 1 - Math.pow(1 - progress, 3);
+            currentRotation = initialRotation + easeOut * (totalRotation - initialRotation);
+            drawWheel();
+            if (progress < 1) {
+                requestAnimationFrame(smoothAnimation);
+            } else {
+                isSpinning = false;
+                spinButton.disabled = false;
+                spinButton.textContent = "Faire tourner la roue !";
+                const normalizedRotation = (currentRotation % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+                let angleUnderPointer = (3 * Math.PI / 2 - normalizedRotation);
+                angleUnderPointer = (angleUnderPointer % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+                const segmentIndex = Math.floor(angleUnderPointer / arc);
+                const resultSegment = segments[segmentIndex];
+                const messagePrefix = resultSegment.value < 0 ? "Vous avez perdu : " : "Vous avez gagné : ";
+                resultDisplay.textContent = `${messagePrefix}${resultSegment.text} !`;
+                resultDisplay.className = `text-2xl font-semibold text-center result-display ${resultSegment.value > 0 ? 'text-green-400' : 'text-red-400'}`;
+                callWinStreamAPI(resultSegment.url);
+                endSound?.play();
+                setTimeout(() => {
+                    appContainer.classList.add('hidden-app');
+                    resultDisplay.textContent = "Prêt à jouer ?";
+                    resultDisplay.className = "text-2xl font-semibold text-center result-display";
+                }, 5000);
+            }
+        }
+
+        spinSound?.play();
+        requestAnimationFrame(smoothAnimation);
     }
 
-    window.onload = function () {
-        drawWheel();
-        spinButton.addEventListener('click', initiateSpinAndShow);
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('trigger') === '1') {
-            initiateSpinAndShow();
-        }
-    };
+    drawWheel();
+    spinButton.addEventListener('click', initiateSpinAndShow);
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('trigger') === '1') {
+        initiateSpinAndShow();
+    }
+});
 </script>

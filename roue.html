@@ -133,11 +133,16 @@
 
         // Fonction pour dessiner la roue
         function drawWheel() {
+            // console.log("drawWheel called. Canvas size:", canvas.width, canvas.height); // Debug log
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             const centerX = canvas.width / 2;
             const centerY = canvas.height / 2;
             const radius = Math.min(centerX, centerY) * 0.9;
+
+            // Ajout d'une simple forme pour vérifier si le canvas dessine
+            // ctx.fillStyle = 'blue';
+            // ctx.fillRect(0, 0, 50, 50);
 
             ctx.save();
             ctx.translate(centerX, centerY);
@@ -229,8 +234,24 @@
         // Fonction pour déclencher le spin (rend visible et lance le spin)
         function initiateSpinAndShow() {
             appContainer.classList.remove('hidden-app'); // Rend le conteneur principal visible
-            resizeCanvas(); // Assure que le canvas est bien dimensionné
-            spinWheel(); // Lance le spin
+            // Utilise requestAnimationFrame pour attendre le prochain rendu du navigateur
+            // avant de redimensionner et lancer le spin, assurant que les dimensions sont à jour.
+            requestAnimationFrame(() => {
+                // console.log("initiatespinAndShow: resizing and spinning..."); // Debug log
+                resizeCanvas(); // Assure que le canvas est bien dimensionné
+                spinWheel(); // Lance le spin
+            });
+        }
+
+        // NOUVEAU : Fonction resizeCanvas déplacée en dehors de window.onload
+        function resizeCanvas() {
+            const containerWidth = canvas.parentElement.clientWidth;
+            // console.log("resizeCanvas: containerWidth =", containerWidth); // Debug log
+            const size = Math.min(containerWidth * 0.9, 400);
+            // console.log("resizeCanvas: calculated size =", size); // Debug log
+            canvas.width = size;
+            canvas.height = size;
+            drawWheel();
         }
 
         // Fonction pour faire tourner la roue (logique de spin)
@@ -261,17 +282,10 @@
             drawWheel();
             spinButton.addEventListener('click', initiateSpinAndShow); // Le bouton appelle initiateSpinAndShow
 
-            function resizeCanvas() {
-                const containerWidth = canvas.parentElement.clientWidth;
-                const size = Math.min(containerWidth * 0.9, 400);
-                canvas.width = size;
-                canvas.height = size;
-                drawWheel();
-            }
-            window.addEventListener('resize', resizeCanvas);
-            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas); // L'écouteur d'événement utilise maintenant la fonction globale
+            resizeCanvas(); // Appel initial pour définir la taille du canvas
 
-            // MODIFICATION CLÉ ICI : Lance le spin automatiquement au chargement de la page
+            // Lance le spin automatiquement au chargement de la page
             // sans condition de paramètre d'URL.
             initiateSpinAndShow();
         };

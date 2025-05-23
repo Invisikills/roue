@@ -1,235 +1,139 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roue de la Fortune</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        html, body {
-            height: 100%;
-            width: 100%;
-            margin: 0;
-            padding: 0;
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background-color: transparent;
-            color: #e2e8f0;
-            overflow: hidden;
-        }
-        #app-container {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        canvas {
-            background-color: #2d3748;
-            border-radius: 50%;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
-            margin-bottom: 2rem;
-            max-width: 90vw;
-            max-height: 90vw;
-            min-width: 200px;
-            min-height: 200px;
-            display: block;
-        }
-        .wheel-container {
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            max-width: 600px;
-        }
-        .pointer {
-            position: absolute;
-            top: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 20px solid transparent;
-            border-right: 20px solid transparent;
-            border-bottom: 40px solid #e53e3e;
-            border-top: none;
-            z-index: 10;
-        }
-        button {
-            transition: all 0.2s ease-in-out;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
-        }
-        button:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .result-display {
-            min-height: 3rem;
-        }
-        .hidden-app {
-            display: none !important;
-        }
-    </style>
-</head>
-<body class="p-4">
-    <div id="app-container" class="hidden-app flex flex-col justify-center items-center w-full h-full">
-        <h1 class="text-4xl font-bold mb-8 text-center">Roue de la Fortune</h1>
-        <div class="wheel-container">
-            <canvas id="fortuneWheel" width="400" height="400"></canvas>
-            <div class="pointer"></div>
-        </div>
-        <button id="spinButton" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-xl mb-4">
-            Faire tourner la roue !
-        </button>
-        <p id="resultDisplay" class="text-2xl font-semibold text-center result-display">
-            Prêt à jouer ?
-        </p>
-    </div>
-    <script>
-        const canvas = document.getElementById('fortuneWheel');
-        const ctx = canvas.getContext('2d');
-        const spinButton = document.getElementById('spinButton');
-        const resultDisplay = document.getElementById('resultDisplay');
-        const appContainer = document.getElementById('app-container');
-        const segments = [
-            { text: "3 wins", value: 3, color: "#2f855a", url: "https://winstream.fr/addwinv2.php?win=3&token=invisikills_IngencyLive_1qh0v8bSg4Knr7gfBvHsGRDv1qOLMX" },
-            { text: "-3 wins", value: -3, color: "#e53e3e", url: "https://winstream.fr/removewinv2.php?win=3&token=invisikills_IngencyLive_1qh0v8bSg4Knr7gfBvHsGRDv1qOLMX" },
-            { text: "2 wins", value: 2, color: "#38a169", url: "https://winstream.fr/addwinv2.php?win=2&token=invisikills_IngencyLive_1qh0v8bSg4Knr7gfBvHsGRDv1qOLMX" },
-            { text: "-2 wins", value: -2, color: "#dd6b20", url: "https://winstream.fr/removewinv2.php?win=2&token=invisikills_IngencyLive_1qh0v8bSg4Knr7gfBvHsGRDv1qOLMX" },
-            { text: "1 win", value: 1, color: "#48bb78", url: "https://winstream.fr/addwinv2.php?win=1&token=invisikills_IngencyLive_1qh0v8bSg4Knr7gfBvHsGRDv1qOLMX" },
-            { text: "-1 win", value: -1, color: "#ecc94b", url: "https://winstream.fr/removewinv2.php?win=1&token=invisikills_IngencyLive_1qh0v8bSg4Knr7gfBvHsGRDv1qOLMX" }
-        ];
-        const numSegments = segments.length;
-        const arc = (2 * Math.PI) / numSegments;
-        let currentRotation = 0;
-        let spinSpeed = 0;
-        const friction = 0.99;
-        let isSpinning = false;
+<script>
+    const canvas = document.getElementById('fortuneWheel');
+    const ctx = canvas.getContext('2d');
+    const spinButton = document.getElementById('spinButton');
+    const resultDisplay = document.getElementById('resultDisplay');
+    const appContainer = document.getElementById('app-container');
+    const spinSound = document.getElementById('spinSound');
+    const endSound = document.getElementById('endSound');
+    const segments = [
+        { text: "3 wins", value: 3, color: "#2f855a", url: "https://winstream.fr/addwinv2.php?win=3&token=invisikills_IngencyLive_1qh0v8bSg4Knr7gfBvHsGRDv1qOLMX" },
+        { text: "-3 wins", value: -3, color: "#e53e3e", url: "https://winstream.fr/removewinv2.php?win=3&token=invisikills_IngencyLive_1qh0v8bSg4Knr7gfBvHsGRDv1qOLMX" },
+        { text: "2 wins", value: 2, color: "#38a169", url: "https://winstream.fr/addwinv2.php?win=2&token=invisikills_IngencyLive_1qh0v8bSg4Knr7gfBvHsGRDv1qOLMX" },
+        { text: "-2 wins", value: -2, color: "#dd6b20", url: "https://winstream.fr/removewinv2.php?win=2&token=invisikills_IngencyLive_1qh0v8bSg4Knr7gfBvHsGRDv1qOLMX" },
+        { text: "1 win", value: 1, color: "#48bb78", url: "https://winstream.fr/addwinv2.php?win=1&token=invisikills_IngencyLive_1qh0v8bSg4Knr7gfBvHsGRDv1qOLMX" },
+        { text: "-1 win", value: -1, color: "#ecc94b", url: "https://winstream.fr/removewinv2.php?win=1&token=invisikills_IngencyLive_1qh0v8bSg4Knr7gfBvHsGRDv1qOLMX" }
+    ];
+    const numSegments = segments.length;
+    const arc = (2 * Math.PI) / numSegments;
+    let currentRotation = 0;
+    let spinSpeed = 0;
+    const friction = 0.99;
+    let isSpinning = false;
 
-        function drawWheel() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const radius = Math.min(centerX, centerY) * 0.9;
+    function drawWheel() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = Math.min(centerX, centerY) * 0.9;
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate(currentRotation);
+        for (let i = 0; i < numSegments; i++) {
+            const angle = i * arc;
+            const segment = segments[i];
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, angle, angle + arc);
+            ctx.lineTo(0, 0);
+            ctx.closePath();
+            ctx.fillStyle = segment.color;
+            ctx.fill();
+            ctx.strokeStyle = "#1a202c";
+            ctx.lineWidth = 2;
+            ctx.stroke();
             ctx.save();
-            ctx.translate(centerX, centerY);
-            ctx.rotate(currentRotation);
-            for (let i = 0; i < numSegments; i++) {
-                const angle = i * arc;
-                const segment = segments[i];
-                ctx.beginPath();
-                ctx.arc(0, 0, radius, angle, angle + arc);
-                ctx.lineTo(0, 0);
-                ctx.closePath();
-                ctx.fillStyle = segment.color;
-                ctx.fill();
-                ctx.strokeStyle = "#1a202c";
-                ctx.lineWidth = 2;
-                ctx.stroke();
-                ctx.save();
-                ctx.rotate(angle + arc / 2 + Math.PI / 2);
-                ctx.fillStyle = "#e2e8f0";
-                ctx.font = "bold 24px Inter";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                ctx.fillText(segment.text, 0, -radius * 0.6);
-                ctx.restore();
-            }
+            ctx.rotate(angle + arc / 2 + Math.PI / 2);
+            ctx.fillStyle = "#e2e8f0";
+            ctx.font = "bold 24px Inter";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(segment.text, 0, -radius * 0.6);
             ctx.restore();
         }
+        ctx.restore();
+    }
 
-        async function callWinStreamAPI(url) {
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                await response.text();
-            } catch (e) {
-                console.error("Erreur WinStream API:", e);
-            }
+    async function callWinStreamAPI(url) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            await response.text();
+        } catch (e) {
+            console.error("Erreur WinStream API:", e);
         }
+    }
 
-        function animateSpin() {
-            if (!isSpinning) return;
-            currentRotation += spinSpeed;
-            spinSpeed *= friction;
-            if (spinSpeed < 0.001) {
-                isSpinning = false;
-                spinButton.disabled = false;
-                spinButton.textContent = "Faire tourner la roue !";
-                const normalizedRotation = (currentRotation % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
-                let angleUnderPointer = (3 * Math.PI / 2 - normalizedRotation);
-                angleUnderPointer = (angleUnderPointer % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
-                const segmentIndex = Math.floor(angleUnderPointer / arc);
-                const resultSegment = segments[segmentIndex];
-                const messagePrefix = resultSegment.value < 0 ? "Vous avez perdu : " : "Vous avez gagné : ";
-                resultDisplay.textContent = `${messagePrefix}${resultSegment.text} !`;
-                resultDisplay.className = `text-2xl font-semibold text-center result-display ${resultSegment.value > 0 ? 'text-green-400' : 'text-red-400'}`;
-                callWinStreamAPI(resultSegment.url);
-                setTimeout(() => {
-                    appContainer.classList.add('hidden-app');
-                    resultDisplay.textContent = "Prêt à jouer ?";
-                    resultDisplay.className = "text-2xl font-semibold text-center result-display";
-                }, 5000);
-            }
-            drawWheel();
-            requestAnimationFrame(animateSpin);
+    function animateSpin() {
+        if (!isSpinning) return;
+        currentRotation += spinSpeed;
+        spinSpeed *= friction;
+        if (spinSpeed < 0.001) {
+            isSpinning = false;
+            spinButton.disabled = false;
+            spinButton.textContent = "Faire tourner la roue !";
+            const normalizedRotation = (currentRotation % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+            let angleUnderPointer = (3 * Math.PI / 2 - normalizedRotation);
+            angleUnderPointer = (angleUnderPointer % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+            const segmentIndex = Math.floor(angleUnderPointer / arc);
+            const resultSegment = segments[segmentIndex];
+            const messagePrefix = resultSegment.value < 0 ? "Vous avez perdu : " : "Vous avez gagné : ";
+            resultDisplay.textContent = `${messagePrefix}${resultSegment.text} !`;
+            resultDisplay.className = `text-2xl font-semibold text-center result-display ${resultSegment.value > 0 ? 'text-green-400' : 'text-red-400'}`;
+            callWinStreamAPI(resultSegment.url);
+            endSound.play();
+            setTimeout(() => {
+                appContainer.classList.add('hidden-app');
+                resultDisplay.textContent = "Prêt à jouer ?";
+                resultDisplay.className = "text-2xl font-semibold text-center result-display";
+            }, 5000);
         }
+        drawWheel();
+        requestAnimationFrame(animateSpin);
+    }
 
-        function initiateSpinAndShow() {
-            appContainer.classList.remove('hidden-app');
-            requestAnimationFrame(() => {
-                resizeCanvas();
-                spinWheel();
-            });
-        }
-
-        function resizeCanvas() {
-            const containerWidth = canvas.parentElement.clientWidth;
-            const size = Math.min(containerWidth * 0.9, 400);
-            canvas.width = size;
-            canvas.height = size;
-            drawWheel();
-        }
-
-        function spinWheel() {
-            if (isSpinning) return;
-            isSpinning = true;
-            spinButton.disabled = true;
-            spinButton.textContent = "La roue tourne...";
-            resultDisplay.textContent = "En attente du résultat...";
-            resultDisplay.className = "text-2xl font-semibold text-center result-display";
-            spinSpeed = Math.random() * 0.1 + 0.05;
-            currentRotation = 0;
-            const randomSpins = Math.floor(Math.random() * 5) + 10;
-            const targetSegmentIndex = Math.floor(Math.random() * numSegments);
-            const targetSegmentCenterAngle = (targetSegmentIndex * arc) + (arc / 2);
-            let finalStopAngle = (3 * Math.PI / 2) - targetSegmentCenterAngle;
-            finalStopAngle = (finalStopAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
-            currentRotation = randomSpins * 2 * Math.PI + finalStopAngle;
-            animateSpin();
-        }
-
-        window.onload = function() {
-            drawWheel();
-            spinButton.addEventListener('click', initiateSpinAndShow);
-            window.addEventListener('resize', resizeCanvas);
+    function initiateSpinAndShow() {
+        appContainer.classList.remove('hidden-app');
+        requestAnimationFrame(() => {
             resizeCanvas();
+            spinWheel();
+        });
+    }
+
+    function resizeCanvas() {
+        const containerWidth = canvas.parentElement.clientWidth;
+        const size = Math.min(containerWidth * 0.9, 400);
+        canvas.width = size;
+        canvas.height = size;
+        drawWheel();
+    }
+
+    function spinWheel() {
+        if (isSpinning) return;
+        isSpinning = true;
+        spinButton.disabled = true;
+        spinButton.textContent = "La roue tourne...";
+        resultDisplay.textContent = "En attente du résultat...";
+        resultDisplay.className = "text-2xl font-semibold text-center result-display";
+        spinSpeed = Math.random() * 0.1 + 0.05;
+        currentRotation = 0;
+        const randomSpins = Math.floor(Math.random() * 5) + 10;
+        const targetSegmentIndex = Math.floor(Math.random() * numSegments);
+        const targetSegmentCenterAngle = (targetSegmentIndex * arc) + (arc / 2);
+        let finalStopAngle = (3 * Math.PI / 2) - targetSegmentCenterAngle;
+        finalStopAngle = (finalStopAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+        currentRotation = randomSpins * 2 * Math.PI + finalStopAngle;
+        spinSound.play();
+        animateSpin();
+    }
+
+    window.onload = function () {
+        drawWheel();
+        spinButton.addEventListener('click', initiateSpinAndShow);
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('trigger') === '1') {
             initiateSpinAndShow();
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('trigger') === '1') {
-            initiateSpinAndShow();
-        };
-    </script>
-</body>
-</html>
+        }
+    };
+</script>

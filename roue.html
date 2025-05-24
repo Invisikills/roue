@@ -354,22 +354,3 @@
     </script>
 </body>
 </html>
-```
-
-### Prochaines étapes pour le débogage :
-
-1.  **Mettez à jour votre fichier `roue.html` sur GitHub Pages** avec ce nouveau code. C'est crucial pour que les modifications prennent effet.
-2.  **Testez l'URL directement dans un navigateur standard :**
-    * Ouvrez `https://invisikills.github.io/roue/roue.html?trigger=spin` dans Chrome ou Firefox.
-    * **Observez le message de débogage :** Il devrait d'abord afficher "Paramètre 'trigger=spin' détecté. Préparation au lancement...", puis "Lancement de la roue...", "Roue en rotation...", etc.
-    * **Vérifiez la console de développement (F12) :** Regardez les messages `console.log` et `console.error`. Y a-t-il des erreurs ? Les messages de log s'affichent-ils dans l'ordre attendu ?
-    * **La roue doit apparaître, tourner correctement et disparaître.** Si ce test ne fonctionne pas, le problème est dans le code ou le déploiement sur GitHub Pages.
-
-3.  **Testez dans TikTok Live Studio :**
-    * Assurez-vous que l'URL de votre "Source Web" est bien `https://invisikills.github.io/roue/roue.html?trigger=spin`.
-    * **TRÈS IMPORTANT :** Dans les propriétés de la "Source Web" de TikTok Live Studio, il doit y avoir une option pour **"Actualiser la source quand elle est activée"** ou **"Refresh on trigger"**. **Cette option doit être cochée/activée.** Sans cela, Live Studio ne rechargera pas la page et la roue ne se déclenchera pas.
-    * **Observez le message de débogage dans Live Studio :** Il devrait vous donner un indice sur l'état de la roue.
-
-Si, après ces vérifications, la roue ne se déclenche toujours pas dans TikTok Live Studio, cela suggère fortement une limitation ou un comportement spécifique du navigateur intégré de Live Studio, ou un problème avec la manière dont TikFinity envoie le signal de rechargement.
-
-Dans ce cas, d'autres approches pourraient être nécessaires, mais elles seraient plus complexes (par exemple, l'utilisation d'un service intermédiaire pour envoyer des messages plus directs, ou l'exploration d'autres outils de streaming avec des intégrations plus robustes pour les sources web). Mais commençons par valider cette dernière version avec les étapes de déboga

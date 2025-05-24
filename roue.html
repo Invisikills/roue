@@ -88,7 +88,22 @@
             display: none !important;
         }
 
-        /* Le style pour #debug-message est supprimé car l'élément est retiré du HTML */
+        /* Style pour le message de débogage */
+        #debug-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            z-index: 1000;
+            display: none; /* Caché par défaut */
+        }
     </style>
 </head>
 <body class="p-4">
@@ -109,6 +124,10 @@
         </p>
     </div>
 
+    <div id="debug-message">
+        Initialisation...
+    </div>
+
     <audio id="spinSound" src="https://www.soundjay.com/buttons/button-1.mp3" preload="auto"></audio>
     <audio id="endSound" src="https://www.soundjay.com/misc/fail-buzzer-01.mp3" preload="auto"></audio>
 
@@ -124,16 +143,18 @@
         const appContainer = document.getElementById('app-container');
         const spinSound = document.getElementById('spinSound');
         const endSound = document.getElementById('endSound');
-        // La référence à debugMessage est supprimée car l'élément n'existe plus
-        // const debugMessage = document.getElementById('debug-message'); 
+        const debugMessage = document.getElementById('debug-message');
 
         // Vérification des éléments HTML au début
-        // La vérification de debugMessage est supprimée
-        if (!canvas || !ctx || !spinButton || !resultDisplay || !appContainer || !spinSound || !endSound) {
+        if (!canvas || !ctx || !spinButton || !resultDisplay || !appContainer || !spinSound || !endSound || !debugMessage) {
             console.error("Un ou plusieurs éléments HTML requis sont manquants. Veuillez vérifier les IDs.");
             if (resultDisplay) {
                 resultDisplay.textContent = "Erreur: Éléments de l'application manquants. Contactez le support.";
                 resultDisplay.className = "text-2xl font-semibold text-center result-display text-red-500";
+            }
+            if (debugMessage) {
+                debugMessage.style.display = 'block';
+                debugMessage.textContent = "Erreur fatale: Éléments HTML manquants.";
             }
             return;
         }
@@ -219,7 +240,7 @@
                     appContainer.classList.add('hidden-app'); // Cache le conteneur principal
                     resultDisplay.textContent = "Prêt à jouer ?";
                     resultDisplay.className = "text-2xl font-semibold text-center result-display";
-                    // debugMessage.style.display = 'none'; // Supprimé
+                    debugMessage.style.display = 'none'; // Cache le message de débogage
                 }, 5000); // Reste affiché 5 secondes après la fin du spin
             }
             drawWheel();
@@ -228,8 +249,8 @@
 
         function initiateSpinAndShow() {
             console.log("initiateSpinAndShow called.");
-            // debugMessage.style.display = 'block'; // Supprimé
-            // debugMessage.textContent = "Lancement de la roue..."; // Supprimé
+            debugMessage.style.display = 'block'; // Affiche le message de débogage
+            debugMessage.textContent = "Lancement de la roue...";
             appContainer.classList.remove('hidden-app'); // Rend le conteneur principal visible
             requestAnimationFrame(() => {
                 resizeCanvas();
@@ -255,7 +276,7 @@
             resultDisplay.textContent = "En attente du résultat...";
             resultDisplay.className = "text-2xl font-semibold text-center result-display";
             
-            // debugMessage.textContent = "Roue en rotation..."; // Supprimé
+            debugMessage.textContent = "Roue en rotation...";
 
             spinSpeed = Math.random() * 0.1 + 0.05;
             currentRotation = 0;
@@ -293,13 +314,13 @@
                     callWinStreamAPI(resultSegment.url);
                     endSound?.play();
                     
-                    // debugMessage.textContent = "Roue terminée !"; // Supprimé
+                    debugMessage.textContent = "Roue terminée !";
                     
                     setTimeout(() => {
                         appContainer.classList.add('hidden-app');
                         resultDisplay.textContent = "Prêt à jouer ?";
                         resultDisplay.className = "text-2xl font-semibold text-center result-display";
-                        // debugMessage.style.display = 'none'; // Supprimé
+                        debugMessage.style.display = 'none';
                     }, 5000);
                 }
             }
@@ -318,16 +339,16 @@
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('trigger') === 'spin') {
             console.log("Paramètre 'trigger=spin' détecté dans l'URL. Déclenchement de la roue...");
-            // debugMessage.style.display = 'block'; // Supprimé
-            // debugMessage.textContent = "Paramètre 'trigger=spin' détecté. Préparation au lancement..."; // Supprimé
+            debugMessage.style.display = 'block';
+            debugMessage.textContent = "Paramètre 'trigger=spin' détecté. Préparation au lancement...";
             setTimeout(() => {
                 initiateSpinAndShow();
             }, 500); // 500ms de délai
         } else {
             console.log("Pas de paramètre 'trigger=spin'. La roue reste cachée par défaut.");
             appContainer.classList.add('hidden-app');
-            // debugMessage.style.display = 'block'; // Supprimé
-            // debugMessage.textContent = "Roue en attente de déclenchement (paramètre 'trigger=spin' manquant)."; // Supprimé
+            debugMessage.style.display = 'block'; // Garde le message de débogage visible
+            debugMessage.textContent = "Roue en attente de déclenchement (paramètre 'trigger=spin' manquant).";
         }
     });
     </script>
